@@ -28,20 +28,14 @@ db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]
 
 @app.get('/jobs/all')
-def get_all_jobs(user: user_dependency, db: db_dependency):
-
-    if user is None:
-        raise HTTPException(status_code=401, detail='Failed Authentication')
+def get_all_jobs(db: db_dependency):
 
     jobs = db.query(Jobs).all()
     return jobs
 
 
 @app.get('/jobs/search')
-def search_jobs(user: user_dependency, db: db_dependency, title: Optional[str] = Query(default=None), job_type: Optional[str] = Query(default=None), department: Optional[str] = Query(default=None)):
-
-    if user is None:
-        raise HTTPException(status_code=401, detail='Failed Authentication')
+def search_jobs(db: db_dependency, title: Optional[str] = Query(default=None), job_type: Optional[str] = Query(default=None), department: Optional[str] = Query(default=None)):
 
     query = db.query(Jobs)
 
@@ -57,10 +51,7 @@ def search_jobs(user: user_dependency, db: db_dependency, title: Optional[str] =
 
 
 @app.get('/job/{job_id}')
-def get_specific_job(user: user_dependency, db: db_dependency, job_id: int):
-
-    if user is None:
-        raise HTTPException(status_code=401, detail='Failed Authentication')
+def get_specific_job(db: db_dependency, job_id: int):
 
     job = db.query(Jobs).filter(Jobs.id == job_id).first()
     if job is None:
