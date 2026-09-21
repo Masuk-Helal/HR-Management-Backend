@@ -5,7 +5,7 @@ import models
 from models import Jobs, Users, JobApplications
 from database import engine, SessionLocal
 from fastapi.responses import JSONResponse
-from router import auth
+from router import auth, admin
 from router.auth import get_current_user
 
 app = FastAPI()
@@ -13,7 +13,7 @@ app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
 
 app.include_router(auth.router)
-# app.include_router(admin.router)
+app.include_router(admin.router)
 
 def get_db():
     db = SessionLocal()
@@ -34,6 +34,25 @@ def get_all_jobs(user: user_dependency, db: db_dependency):
         raise HTTPException(status_code=401, detail='Failed Authentication')
 
     jobs = db.query(Jobs).all()
+    return jobs
+
+
+@app.get('/jobs/search')
+def search_jobs(user: user_dependency, db: db_dependency, title: Optional[str] = Query(default=None), job_type: Optional[str] = Query(default=None), department: Optional[str] = Query(default=None)):
+
+    if user is None:
+        raise HTTPException(status_code=401, detail='Failed Authentication')
+
+    query = db.query(Jobs)
+
+    if title:
+        query = query.filter(Jobs.title.ilike(f'%{title}%'))
+    if job_type:
+        query = query.filter(Jobs.job_type == job_type)
+    if department:
+        query = query.filter(Jobs.department == department)
+
+    jobs = query.all()
     return jobs
 
 
