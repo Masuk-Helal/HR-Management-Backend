@@ -50,15 +50,19 @@ def search_jobs(db: db_dependency, title: Optional[str] = Query(default=None), j
     return jobs
 
 
+
+
 @app.get('/job/{job_id}')
-def get_specific_job(db: db_dependency, job_id: int):
+def get_specific_job( user: user_dependency, db: db_dependency, job_id: int ):
+    if user is None:
+        raise HTTPException( status_code=401, detail='Failed Authentication')
 
     job = db.query(Jobs).filter(Jobs.id == job_id).first()
+
     if job is None:
-        raise HTTPException(status_code=404, detail='Job not found')
+        raise HTTPException( status_code=404,detail='Job not found')
 
     return job
-
 
 @app.post('/apply/{job_id}')
 def apply_job(user: user_dependency, db: db_dependency, job_id: int):
