@@ -137,6 +137,27 @@ def update_password(user: user_dependency, db : db_dependency, update_password :
     return JSONResponse(status_code=200, content={'message' : 'Password updated successfully'})
 
 
+@router.get('/getuser')
+def get_user(user: user_dependency, db : db_dependency):
+
+    if user is None:
+        raise HTTPException(status_code=401, detail='Failed Authentication')
+
+    user = db.query(Users).filter(Users.id == user.get('id')).first()
+
+    if user is None:
+        raise HTTPException(status_code=404, detail='User not found')
+
+    return JSONResponse(status_code=200, content={
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'firstname': user.firstname,
+        'lastname': user.lastname,
+        'role': user.role
+    })
+
+
 @router.put('/edituser')
 def update_user(user: user_dependency, db : db_dependency, update_user : UpdateUser):
 
@@ -151,16 +172,5 @@ def update_user(user: user_dependency, db : db_dependency, update_user : UpdateU
         setattr(user,key,value)
 
     db.commit()
-    db.refresh(user)
 
-    return JSONResponse(status_code=200, content={
-        'message': 'User updated successfully',
-        'user': {
-            'id': user.id,
-            'username': user.username,
-            'email': user.email,
-            'firstname': user.firstname,
-            'lastname': user.lastname,
-            'role': user.role
-        }
-    })
+    return JSONResponse(status_code=200, content={'message' : 'User updated successfully'})
