@@ -151,5 +151,16 @@ def update_user(user: user_dependency, db : db_dependency, update_user : UpdateU
         setattr(user,key,value)
 
     db.commit()
+    db.refresh(user)
 
-    return JSONResponse(status_code=200, content={'message' : 'User updated successfully'})
+    return JSONResponse(status_code=200, content={
+        'message': 'User updated successfully',
+        'user': {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'firstname': user.firstname,
+            'lastname': user.lastname,
+            'role': user.role
+        }
+    })
