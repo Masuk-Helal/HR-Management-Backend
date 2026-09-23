@@ -66,8 +66,8 @@ def authenticate_user(username, password, db):
     return False
 
 
-def create_access_token(username: str, user_id: int, role: str, expires_delta: timedelta):
-    encode = {'sub': username, 'id': user_id, 'role': role}
+def create_access_token(username: str, user_id: int, role: str, email: str, firstname: str, lastname: str, expires_delta: timedelta):
+    encode = {'sub': username, 'id': user_id, 'role': role, 'email': email, 'firstname': firstname, 'lastname': lastname}
     expires = datetime.now(timezone.utc) + expires_delta
     encode.update({'exp': expires})
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
@@ -79,9 +79,12 @@ def get_current_user(token: Annotated[str, Depends(OAuth2_bearer)]):
         username: str = payload.get('sub')
         user_id: int = payload.get('id')
         role: str = payload.get('role')
+        email: str = payload.get('email')
+        firstname: str = payload.get('firstname')
+        lastname: str = payload.get('lastname')
         if username is None or user_id is None:
             raise HTTPException(status_code=404, detail='User not found')
-        return {'username': username, 'id': user_id, 'role': role}
+        return {'username': username, 'id': user_id, 'role': role, 'email': email, 'firstname': firstname, 'lastname': lastname}
     except:
         raise HTTPException(status_code=404, detail='User not found')
 
@@ -114,7 +117,7 @@ def login_user(db : db_dependency, form_data: Annotated[OAuth2PasswordRequestFor
     if not user:
         return "Failed authentication"
 
-    token = create_access_token(user.username, user.id, user.role, timedelta(minutes=30))
+    token = create_access_token(user.username, user.id, user.role, user.email, user.firstname, user.lastname, timedelta(minutes=30))
     return {'access_token': token, 'tokey_type': 'bearer'}
 
 
