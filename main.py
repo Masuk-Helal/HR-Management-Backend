@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import Annotated, Optional
 import models
@@ -9,6 +10,19 @@ from router import auth, admin
 from router.auth import get_current_user
 
 app = FastAPI()
+
+origins = [
+    'http://localhost:5173',
+    'https://mh-hr-managment.netlify.app',
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
 
 models.Base.metadata.create_all(bind=engine)
 
